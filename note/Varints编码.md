@@ -1,0 +1,69 @@
+
+#### Varints 解码
+
+ZigZag 锯齿形编码，将带符号整数映射成无符号整数，使得较小的负数相应的 Varints 编码值也小
+
+org  | enc|
+--------- | --------|
+0  | 0 |
+-1  | 1 |
+1  | 2 |
+-2  | 3 |
+2  | 4 |
+
+相应的编码公式为
+```java
+enc = (org << 1) ^ (org >> 31)
+```
+以及解码公式为
+```java
+org = (enc >>> 1) ^ -(enc & 1)
+```
+
+ Varints 编码过程：将每个字节最高位作为一个标记 flag, 最低的字节 flag=0， 其余的都为 1. 以 123 举例，首先 ZigZag 锯齿形编码
+
+ ```
+ 1111 0110  // ZigZag(123)
+ 000 0001  111 0110 //每个字节只有 7bit 用来表示数值，按 7bit 分割
+ 111 0110  000 0001 //Varints 使用小端字节序，翻转字节
+ 1111 0110  0000 0001 // 设置最低字节 flag 位为 0，其余字节 flag 位为 1
+ ```
+
+ ```java
+    private static ByteBuffer toVarints(int t){
+        int o = (t<<1) ^ (t>>31);
+        ByteBuffer buffer = ByteBuffer.allocate(1024);
+        while ((o & 0xffffff80)!=0L){
+            byte b = (byte) ((o & 0x7f)|0x80);
+            buffer.put(b);
+            o >>>= 7;
+        }
+        buffer.put((byte) o);
+        buffer.flip();
+        byte[] bytes = new byte[buffer.limit()];
+        buffer.get(bytes);
+        buffer.flip();
+        System.out.println("after encode: "+new BigInteger(1,bytes).toString(2));
+        return buffer;
+    }
+ ```
+
+ Varints 解码过程：逆过程，最后 ZigZag 锯齿形解码
+ ```java
+    private static int fromVarints(ByteBuffer buffer) throws Exception {
+        int f = 0;
+        int b;
+        int i = 0;
+        while (((b = buffer.get()) & 0x80)!= 0){
+            f |= (b & 0x7f) << i;
+            i +=7;
+            if (i>28){
+                throw new Exception("> 32bit");
+            }
+        }
+        f |= b<< i;
+        return (f >>> 1) ^ -(f & 1);
+    }
+ ```
+
+
