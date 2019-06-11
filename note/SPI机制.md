@@ -2,13 +2,13 @@
 开发过程中可能存在一套接口，对应不同的厂商的实现，比如数据库的驱动，还有日志插件等，需要 SPI(Service Provider Interface) 机制，来实现有效地解耦。
 
 ### 示例
-```
+
 * spi
     * interfaces 制定的接口
     * exam 测试
     * imp1 实现1
     * imp2 实现2
-```
+
 以上是多模块结构，简单的 spi 机制实现。
 
 #### interfaces 
