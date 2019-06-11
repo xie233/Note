@@ -116,7 +116,6 @@ orange
 JDK5 的 instrument 机制，局限于 main 函数执行前，JDK 6 增加了 agentmain， 可以通过 vm attach 到正在运行的程序，修改其字节码和运行结果
 
 ##### FruitAgentMain 实现 agentmain 方法，加载水果转化器(同上)
-
 ```java
 public class FruitAgentMain {
     public static void agentmain(String options, Instrumentation ins) throws UnmodifiableClassException, ClassNotFoundException {
@@ -192,8 +191,8 @@ we get orange at 9
 
     * 只能 attach 一次，第二次加载修改后的 jar, 对程序无影响
     * 加载 magent.jar, 没有使用绝对路径 loadAgent 不成功
-    * tools.jar 直接使用绝对路径设置
-    * 字节码修改目前只能在同一个编译好的环境里才能修改，需要再想想。。 （分成两个项目就改不成 orange 了）
+    * tools.jar 直接使用绝对路径设置 
+    * 对于上面 orange 生成新的 Fruit.class， 使用绝对路径加载（不然加载不到）
 
 
 
